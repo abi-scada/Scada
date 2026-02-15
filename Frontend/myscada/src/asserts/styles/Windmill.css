@@ -1,0 +1,74 @@
+.loader-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.rotor {
+ 
+    position: relative;
+    height: 150px;
+    width: 150px;
+    top: 15px;
+    left: 0px;
+    filter: brightness(0) saturate(100%) invert(73%) sepia(84%) saturate(856%) hue-rotate(107deg) brightness(108%) contrast(102%);
+    animation: animate 1s infinite linear;
+    transform-origin: 50% 41%;
+    background-color: transparent;
+    
+}
+.loader-overlay p {
+  margin-top: 15px;
+  color: #fff;
+  font-size: 16px;
+}
+.rotor-wrapper {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.rgb-arcs {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/* base arc */
+.arc {
+  fill: none;
+  stroke-width: 1;
+  stroke-linecap: round;
+
+  /* 120deg arc */
+  stroke-dasharray: 120 360;
+  transform-origin: 50% 50%;
+}
+
+/* position arcs */
+.arc1 { transform: rotate(0deg); }
+.arc2 { transform: rotate(-120deg); }
+.arc3 { transform: rotate(-240deg); }
+
+/* slow subtle rotation (optional but nice) */
+.rgb-arcs {
+  animation: slowSpin .6s linear infinite;
+}
+
+@keyframes slowSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+
+/* rotor above */
+.rotor {
+  z-index: 2;
+}
