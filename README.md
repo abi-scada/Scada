@@ -171,7 +171,6 @@ npm start
 ![Charts](docs/charts.png)
 
 
-
 ---
 
 ## 🔒 Security
