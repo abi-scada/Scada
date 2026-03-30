@@ -32,42 +32,6 @@
   transition: 0.3s;
 }
 
-.glass-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.8),
-    transparent
-  );
-}
-
-.glass-container::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 1px;
-  height: 100%;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.8),
-    transparent,
-    rgba(255, 255, 255, 0.3)
-  );
-}
-
-.glass-container:hover {
-    border-width: 1px;
-  border-color: var(--accent-cyan);
-  background: rgba(0, 229, 255, 0.03);
-}
-
 .add-mc-form{
   display: flex;
   justify-content: center;
@@ -96,4 +60,6 @@
 }
 .add-mc-form button{
   padding: 10px 30px;
+  background-color: aqua;
+  font-weight: bolder;
 }

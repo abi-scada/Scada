@@ -9,12 +9,15 @@ import LogoutButton from "./LogoutButton";
 import '../styles/Header.css'
 import axios from "axios";
 import BURL from "./URL";
+import { useApp } from "../../context/AppContext";
 
 
-function Profile({setShowProfile}){
+function Profile(){
+
+  const {setShowProfile} = useApp();
     
     
-    
+     
     return (
         <>
            
@@ -32,11 +35,16 @@ function Profile({setShowProfile}){
 
 
 
-export function Navbar({ mc,uid, globalAlarm, setGlobalAlarm, setShowProfile, setShowLogout }){
-    console.log(uid);
+export function Navbar({ mc,uid }){
+    //console.log(uid);
     const location = useLocation();
     const isPath = location.pathname;
     const uname = (mc || "").toUpperCase();
+
+    const {
+    globalAlarm,
+    setGlobalAlarm
+  } = useApp();
 
   const navigate = useNavigate(); 
   return (
@@ -55,22 +63,22 @@ export function Navbar({ mc,uid, globalAlarm, setGlobalAlarm, setShowProfile, se
   src={globalAlarm ? Bell : CrossBell}
   title={globalAlarm ? "Alarm ON" : "Alarm OFF"}
   onClick={() => {setGlobalAlarm(prev => !prev);
-    console.log("globalAlarm:", globalAlarm);
-console.log("setGlobalAlarm:", setGlobalAlarm);
+//console.log("globalAlarm:", globalAlarm);
+//console.log("setGlobalAlarm:", setGlobalAlarm);
   }}
 />
         }
         {isPath === "/detailed" &&
         <img  className="home-icon" onClick={()=>{navigate(-1)}} src={homeIcon} alt="img"/>
         }
-        <Profile setShowProfile={setShowProfile}/>  
-        <LogoutButton setShowLogout={setShowLogout}/>
+        <Profile />  
+        <LogoutButton />
       </div>
     </div>
   )
 }
 
-const Header = ({ user, globalAlarm, setGlobalAlarm, setShowProfile, setShowLogout}) => {
+const Header = ({ user }) => {
     const uid = user;
     const [uname, setUname] = useState("");
     useEffect( ()=>{
@@ -94,10 +102,7 @@ const Header = ({ user, globalAlarm, setGlobalAlarm, setShowProfile, setShowLogo
       <Navbar 
       mc={uname} 
       uid={uid} 
-      globalAlarm={globalAlarm}
-      setGlobalAlarm={setGlobalAlarm} 
-      setShowProfile={setShowProfile}
-      setShowLogout={setShowLogout}/>
+      />
     )
 }
 

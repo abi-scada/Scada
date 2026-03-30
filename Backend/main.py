@@ -3,12 +3,13 @@ from fastapi.responses import StreamingResponse, FileResponse
 from models import Users, Machines, TurbineData, LoginRequest,EmailRequest
 import dbModel
 import asyncio
+import os
 import csv
 from io import StringIO
 from gen import generate_turbine_data
 from database import engine, SL
 from sqlalchemy.orm import Session 
-from sqlalchemy import join, select, text, outerjoin, func
+from sqlalchemy import join, select, text, outerjoin, func, and_
 from datetime import datetime,timedelta
 from security.password import verify_password,hash_password
 from security.auth import create_access_token, get_user_id
@@ -29,6 +30,8 @@ from reportlab.lib.styles import getSampleStyleSheet
 import tempfile
 
 app = FastAPI()
+
+PRODUCTION_RETENTION_DAYS = int(os.getenv("PRODUCTION_RETENTION_DAYS", "100"))
 
 
 origins = [
@@ -54,6 +57,189 @@ def get_db():
         db.close()
 
 
+
+
+def update_daily_production(td: dbModel.TurbineData, db: Session) -> None:
+    created_at = td.created_at or datetime.utcnow()
+    day = created_at.date()
+    day_start = datetime.combine(day, datetime.min.time())
+
+    row = db.query(dbModel.DailyProduction).filter(
+        dbModel.DailyProduction.mc_id == td.mcId,
+        dbModel.DailyProduction.day == day
+    ).first()
+
+    if not row:
+        prev = db.query(dbModel.TurbineData).filter(
+            dbModel.TurbineData.mcId == td.mcId,
+            dbModel.TurbineData.created_at < day_start
+        ).order_by(dbModel.TurbineData.created_at.desc()).first()
+
+        if prev:
+            base_g1_kw = prev.g1_kw
+            base_g2_kw = prev.g2_kw
+            base_total_kw = prev.total_kw
+            base_g1_hrs = prev.g1_hrs
+            base_g2_hrs = prev.g2_hrs
+            base_total_hrs = prev.total_hrs
+        else:
+            # No previous day data; treat first reading as baseline (daily = 0 at start).
+            base_g1_kw = td.g1_kw
+            base_g2_kw = td.g2_kw
+            base_total_kw = td.total_kw
+            base_g1_hrs = td.g1_hrs
+            base_g2_hrs = td.g2_hrs
+            base_total_hrs = td.total_hrs
+
+        row = dbModel.DailyProduction(
+            mc_id=td.mcId,
+            day=day,
+            base_g1_kw=base_g1_kw,
+            base_g2_kw=base_g2_kw,
+            base_total_kw=base_total_kw,
+            base_g1_hrs=base_g1_hrs,
+            base_g2_hrs=base_g2_hrs,
+            base_total_hrs=base_total_hrs,
+        )
+        db.add(row)
+
+    row.g1_kw = max(0, td.g1_kw - row.base_g1_kw)
+    row.g2_kw = max(0, td.g2_kw - row.base_g2_kw)
+    row.total_kw = max(0, td.total_kw - row.base_total_kw)
+    row.g1_hrs = max(0, td.g1_hrs - row.base_g1_hrs)
+    row.g2_hrs = max(0, td.g2_hrs - row.base_g2_hrs)
+    row.total_hrs = max(0, td.total_hrs - row.base_total_hrs)
+    row.updated_at = created_at
+
+    if PRODUCTION_RETENTION_DAYS > 0:
+        cutoff = day - timedelta(days=PRODUCTION_RETENTION_DAYS)
+        db.query(dbModel.DailyProduction).filter(
+            dbModel.DailyProduction.day < cutoff
+        ).delete(synchronize_session=False)
+
+    db.commit()
+
+
+
+async def send_daily_production_report(user, db: Session) -> None:
+    if not conf.MAIL_SERVER or not conf.MAIL_USERNAME or not conf.MAIL_PASSWORD:
+        print("daily report skipped: email config missing (MAIL_SERVER/MAIL_USERNAME/MAIL_PASSWORD).")
+        return
+
+    today = datetime.now().date()
+
+    j = outerjoin(
+        dbModel.Machines,
+        dbModel.DailyProduction,
+        and_(
+            dbModel.DailyProduction.mc_id == dbModel.Machines.mid,
+            dbModel.DailyProduction.day == today
+        )
+    )
+
+    rows = db.query(
+        dbModel.Machines.mid,
+        dbModel.Machines.mname,
+        func.coalesce(dbModel.DailyProduction.g1_kw, 0),
+        func.coalesce(dbModel.DailyProduction.g2_kw, 0),
+        func.coalesce(dbModel.DailyProduction.total_kw, 0),
+        func.coalesce(dbModel.DailyProduction.g1_hrs, 0),
+        func.coalesce(dbModel.DailyProduction.g2_hrs, 0),
+        func.coalesce(dbModel.DailyProduction.total_hrs, 0),
+    ).select_from(j).filter(
+        dbModel.Machines.user_id == user.id
+    ).order_by(dbModel.Machines.mid).all()
+
+    if not rows:
+        return
+
+    file_path = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf").name
+    doc = SimpleDocTemplate(
+        file_path,
+        pagesize=A4,
+        title="Daily Production Report",
+        auther="Abi Scada",
+        subject="Daily Production"
+    )
+
+    elements = []
+    styles = getSampleStyleSheet()
+
+    elements.append(Paragraph(
+        f"Daily Production Report<br/>User: {user.name}<br/>Date: {today}",
+        styles["Title"]
+    ))
+
+    table_data = [[
+        "Machine ID", "Name", "G1 kW", "G2 kW", "Total kW", "G1 Hrs", "G2 Hrs", "Total Hrs"
+    ]]
+
+    for r in rows:
+        table_data.append([
+            r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7]
+        ])
+
+    table = Table(table_data, repeatRows=1)
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.blue),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.darkblue),
+        ("ALIGN", (1, 1), (-1, -1), "CENTER"),
+    ]))
+
+    elements.append(table)
+    doc.build(elements)
+
+    message = MessageSchema(
+        subject="Daily Production Report",
+        recipients=[user.email],
+        body=f"Daily production report for {today} is attached.",
+        subtype=MessageType.plain,
+        attachments=[{
+            "file": file_path,
+            "filename": f"daily_production_{today}.pdf",
+            "content_type": "application/pdf"
+        }]
+    )
+
+    fm = FastMail(conf)
+    await fm.send_message(message)
+
+    try:
+        os.remove(file_path)
+    except Exception:
+        pass
+
+
+async def daily_report_scheduler() -> None:
+    while True:
+        now = datetime.now()
+        next_run = now.replace(hour=0, minute=1, second=0, microsecond=0)
+        if now >= next_run:
+            next_run = next_run + timedelta(days=1)
+
+        wait_seconds = (next_run - now).total_seconds()
+        await asyncio.sleep(wait_seconds)
+
+        db = SL()
+        try:
+            users = db.query(dbModel.Users).all()
+            for user in users:
+                try:
+                    print("daily gen report sheduled!!!")
+                    await send_daily_production_report(user, db)
+                except Exception as e:
+                    msg = str(e)
+                    if "getaddrinfo failed" in msg:
+                        print(
+                            "daily report error:",
+                            e,
+                            f"(DNS lookup failed for {conf.MAIL_SERVER}. Check network/DNS or MAIL_SERVER.)"
+                        )
+                    else:
+                        print("daily report error:", e)
+        finally:
+            db.close()
 
 
 def handle_alarm(mc_id: int, status: str, db: Session):
@@ -281,8 +467,10 @@ async def turbine_simulator(machine_id: int,db: Session = Depends(get_db)):
     while True:
         data = generate_turbine_data(machine_id)
         db = SL()
-        db.add(dbModel.TurbineData(**data.model_dump()))  
+        td_row = dbModel.TurbineData(**data.model_dump())
+        db.add(td_row)
         db.commit()
+        update_daily_production(td_row, db)
         handle_alarm(
         mc_id=data.mcId,
         status=data.status,
@@ -297,12 +485,18 @@ async def turbine_simulator(machine_id: int,db: Session = Depends(get_db)):
 
 @app.on_event("startup")
 async def start_simulator():
-    machine_ids = [1,2,3,]
+    machine_ids = [301,302,303, 304, 305]
 
     for mid in machine_ids:
         asyncio.create_task(turbine_simulator(mid))
     print("simulator running!!!")
     
+
+
+@app.on_event("startup")
+async def start_daily_reports():
+    asyncio.create_task(daily_report_scheduler())
+
 
 @app.get('/')
 def index():
@@ -394,7 +588,81 @@ def get_card_details(user_id: int, db: Session = Depends(get_db)):
 
     return list(machines.values())
 
- 
+
+@app.get('/production/summary/{user_id}')
+def get_daily_production_summary(user_id: int, db: Session = Depends(get_db)):
+    today = datetime.now().date()
+
+    j = join(
+        dbModel.DailyProduction,
+        dbModel.Machines,
+        dbModel.DailyProduction.mc_id == dbModel.Machines.mid
+    )
+
+    total_kw = db.query(
+        func.coalesce(func.sum(dbModel.DailyProduction.total_kw), 0)
+    ).select_from(j).filter(
+        dbModel.Machines.user_id == user_id,
+        dbModel.DailyProduction.day == today
+    ).scalar()
+
+    hero_row = db.query(
+        dbModel.DailyProduction,
+        dbModel.Machines
+    ).select_from(j).filter(
+        dbModel.Machines.user_id == user_id,
+        dbModel.DailyProduction.day == today
+    ).order_by(dbModel.DailyProduction.total_kw.desc()).first()
+
+    hero = None
+    if hero_row:
+        dp, mc = hero_row
+        hero = {
+            "mc_id": mc.mid,
+            "mc_name": mc.mname,
+            "total_kw": dp.total_kw
+        }
+
+    return {
+        "day": str(today),
+        "total_kw": int(total_kw or 0),
+        "hero": hero
+    }
+
+
+
+
+@app.get('/production/hero/{user_id}')
+def get_hero_production(user_id: int, db: Session = Depends(get_db)):
+    today = datetime.now().date()
+
+    j = join(
+        dbModel.DailyProduction,
+        dbModel.Machines,
+        dbModel.DailyProduction.mc_id == dbModel.Machines.mid
+    )
+
+    hero_row = db.query(
+        dbModel.DailyProduction,
+        dbModel.Machines
+    ).select_from(j).filter(
+        dbModel.Machines.user_id == user_id,
+        dbModel.DailyProduction.day == today
+    ).order_by(dbModel.DailyProduction.total_kw.desc()).first()
+
+    if not hero_row:
+        return {"day": str(today), "hero": None}
+
+    dp, mc = hero_row
+    return {
+        "day": str(today),
+        "hero": {
+            "mc_id": mc.mid,
+            "mc_name": mc.mname,
+            "total_kw": dp.total_kw
+        }
+    }
+
 
 @app.get('/cards/{user_id}')
 def get_card_details(user_id:int, db:Session=Depends(get_db)):
@@ -578,8 +846,10 @@ def add_turbine_data(td: TurbineData, db: Session = Depends(get_db)):
         total_hrs = td.total_hrs,
         created_at = td.created_at or datetime.utcnow()
     )
-    db.add(dbModel.TurbineData(**new_data.model_dump()))
+    td_row = dbModel.TurbineData(**new_data.model_dump())
+    db.add(td_row)
     db.commit()
+    update_daily_production(td_row, db)
     handle_alarm(
         mc_id=new_data.mc_id,
         status=new_data.status,

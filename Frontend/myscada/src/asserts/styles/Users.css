@@ -120,7 +120,7 @@
     padding: 10px;
 }
 .users-table-conntainer{
-    height: 80vh;
+    height: auto;
     width: 95vw;
     justify-content: center;
     align-items: center;
@@ -266,7 +266,7 @@
     padding: 10px;
 }
 .users-table-conntainer{
-    height: 80vh;
+    height: auto;
     width: 70vw;
     justify-content: center;
     align-items: center;

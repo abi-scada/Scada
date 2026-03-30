@@ -11,6 +11,7 @@ import { BrowserRouter } from 'react-router-dom';
 import "leaflet/dist/leaflet.css";
 
 import "./utils/leafletIconFix";
+import { AppProvider } from './context/AppContext';
 
 
 
@@ -22,7 +23,9 @@ root.render(
       <ThemeProvider>
         <BrowserRouter>
           <LoadingProvider>
-            <App />
+            <AppProvider>
+              <App />
+            </AppProvider>
           </LoadingProvider>
         </BrowserRouter>
       </ThemeProvider>

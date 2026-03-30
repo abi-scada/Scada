@@ -15,7 +15,7 @@ def generate_turbine_data(machine_id: int):
         status=random.choice(["stop", "yaw motor overload","grid drop","stop", "yaw motor overload","grid drop","run","run","run","run"]),
         #status=random.choice(["stop","run","run","run","run","run","run","run","run","run","run","run","run","run","run","run"]),
 
-        hyd_press=random.randint(120, 200),
+        hyd_press=random.randint(0, 120),
         nac_pos=random.randint(0, 360),
 
         wind=round(random.uniform(1.0, 30.0), 2),

@@ -17,7 +17,7 @@ const RecenterButton = ({ machines }) => {
     if (!machines.length) return;
 
     const bounds = L.latLngBounds(
-      machines.map(m => [m.mc_lat, m.mc_long])
+      machines?.map(m => [m.mc_lat, m.mc_long])
     );
 
     map.fitBounds(bounds, { padding: [50, 50] });
@@ -91,9 +91,11 @@ const FitBounds = ({ machines }) => {
   const fittedRef = useRef(false);
 
   useEffect(() => {
-    if (!machines.length || fittedRef.current) return;
-
-    const bounds = machines.map(m => [m.mc_lat, m.mc_long]);
+    if (!machines.length || fittedRef.current ) return;//
+    const bounds = L.latLngBounds(
+  machines.map(m => [m.mc_lat, m.mc_long])
+);
+    //const bounds = machines.map(m => [m.mc_lat, m.mc_long]);
     map.fitBounds(bounds, { padding: [50, 50] });
 
     fittedRef.current = true;
@@ -102,54 +104,51 @@ const FitBounds = ({ machines }) => {
   return null;
 };
 
+const FixMapSize = () => {
+  const map = useMap();
+
+  useEffect(() => {
+    const resize = () => {
+      map.invalidateSize();
+    };
+
+    window.addEventListener("resize", resize);
+
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 500);
+
+    return () => window.removeEventListener("resize", resize);
+  }, [map]);
+
+  return null;
+};
 
 
-const MapView = ({userid}) => {
+const MapView = ({machine}) => {
   const [machines, setMachines] = useState([]);
   const [mapType, setMapType] = useState("normal");
 
-  
+  //console.log(userid);
 
   const navigate = useNavigate();
   
-
-
-
-  useEffect(()=>{
-    const get_machines = async() =>{
-      try{
-        
-        const res =await axios.get(BURL+"card/"+userid);
-        if (res){
-          //console.log(res.data);
-          setMachines(res.data);
-        }
-    
-      }
-      catch(e){
-        console.log("error : "+e)
-      }
-    }
-    get_machines();
-    const interval = setInterval(get_machines, 15000);
-    return () => clearInterval(interval);
-  },[])
-
   
-
-  
-
-
+useEffect(()=>{
+  setMachines(machine);
+},[machine]);
 
 
   return (
     <div className="map_root">
       <MapContainer
-      center={[12.9716, 77.5946]}
-      zoom={7}
+      center={[8.34, 77.56]}
+      zoom={11}
       className="map_container"
+      preferCanvas={true}
       
     >
+      <FixMapSize/>
       
       <div className="map-controls">
   <button onClick={() => setMapType("normal")}>Normal</button>
@@ -167,8 +166,9 @@ const MapView = ({userid}) => {
 
 {mapType === "satellite" && (
   <TileLayer
-    key="satellite"
-    url="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
+  url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+
+  //  url="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
     attribution="© Google"
   />
 
@@ -179,6 +179,7 @@ const MapView = ({userid}) => {
 
 {mapType === "terrain" && (
   <TileLayer
+    //url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
     url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
     attribution="&copy; OpenStreetMap HOT"
   />
@@ -191,7 +192,7 @@ const MapView = ({userid}) => {
 
 
 
-      {machines.map(machine => (
+      {machines?.map(machine => (
         <Marker
           key={machine.mid}
           position={[machine.mc_lat, machine.mc_long]}

@@ -4,7 +4,6 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import '../styles/Detailed.css'
 import Cookies from 'js-cookie';
 import Header from './Header';
-import Line from './Line';
 import summary from '../icons/summary.png'
 import control from '../icons/admin-panel.png'
 import report from '../icons/report.png'
@@ -12,14 +11,15 @@ import chart from '../icons/bar-chart.png'
 import week from '../icons/7-days.png'
 import BackButton from '../icons/back-button.png';
 import dwld from '../icons/download.png'
-import { useLoading } from './LoadingContext';
+
+
 
 import BasicChart from './Line';
 import BURL from './URL';
 
 const URL = BURL+"turbine-data/"
 const WEEK_URL = BURL+"turbine/week/"
-
+ 
 const Detailed = () => {
   const [tdata, setTdata] = useState([]);
   const [activeTab, setActiveTab] = useState('Summary');
@@ -38,7 +38,6 @@ const Detailed = () => {
 
   const loader = useRef(null);
 
-    const { setDataDone } = useLoading();
 
   
   const usr = Cookies.get("user_id");
@@ -147,7 +146,6 @@ const Detailed = () => {
       setTab(id+1);
     }
     //Tab 
-    const tbs = ['Control','Charts', 'Summary', 'Reports', 'Monthly'];
     const tabs = [
       {name:'Control', icon: control},
       {name:'Charts', icon: chart},
@@ -347,7 +345,7 @@ const Detailed = () => {
             <option value="csv">CSV</option>
           </select>
           
-          <button type='submit' className='download-btn'><img className='d-img' src={dwld} alt="" /> <h4>Download</h4></button>
+          <button type='submit' className='glass-card download-btn'><img className='d-img' src={dwld} alt="" /> <h4>Download</h4></button>
           
     
             </form>
@@ -442,6 +440,8 @@ const Detailed = () => {
           </div>
         </div>
         
+    
+    
     </div>
   )
 }

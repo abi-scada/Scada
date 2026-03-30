@@ -67,7 +67,7 @@ const ViewUser = () => {
                     setShowConfirm(false);
                     setSelectedMachineId(null);
                     }}>&times;</div>
-                <p>Are you sure you want to delete this user?</p>
+                <p>Are you sure <br /> you want to delete this machine?</p>
 
                 <div className="btn-contain">
                     <button

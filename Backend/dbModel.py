@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Boolean, Float, Text, String, ForeignKey, Date, Time, DateTime
+from sqlalchemy import Column, Integer, Boolean, Float, Text, String, ForeignKey, Date, Time, DateTime, UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
@@ -86,6 +86,40 @@ class TurbineData(Base):
         back_populates="data",
         passive_deletes=True
         )
+
+
+class DailyProduction(Base):
+    __tablename__ = "daily_production"
+    __table_args__ = (
+        UniqueConstraint("mc_id", "day", name="uq_daily_production_machine_day"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    mc_id = Column(Integer, ForeignKey("machines.mid", ondelete="CASCADE"), index=True, nullable=False)
+    day = Column(Date, index=True, nullable=False)
+
+    # Daily generation (derived: current total - base total)
+    g1_kw = Column(Integer, nullable=False, default=0)
+    g2_kw = Column(Integer, nullable=False, default=0)
+    total_kw = Column(Integer, nullable=False, default=0)
+    g1_hrs = Column(Integer, nullable=False, default=0)
+    g2_hrs = Column(Integer, nullable=False, default=0)
+    total_hrs = Column(Integer, nullable=False, default=0)
+
+    # Baseline totals captured at day start (previous day last reading)
+    base_g1_kw = Column(Integer, nullable=False, default=0)
+    base_g2_kw = Column(Integer, nullable=False, default=0)
+    base_total_kw = Column(Integer, nullable=False, default=0)
+    base_g1_hrs = Column(Integer, nullable=False, default=0)
+    base_g2_hrs = Column(Integer, nullable=False, default=0)
+    base_total_hrs = Column(Integer, nullable=False, default=0)
+
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
+
+    machine = relationship(
+        "Machines",
+        passive_deletes=True
+    )
     
 class Alarm(Base):
     __tablename__ = "alarms"
@@ -104,4 +138,4 @@ class Alarm(Base):
         passive_deletes=True
         )
 
-    
+

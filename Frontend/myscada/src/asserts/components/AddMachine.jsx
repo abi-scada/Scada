@@ -3,6 +3,8 @@ import {UserContext} from "./UserContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import '../styles/AddMachines.css';
 import axios from "axios";
+import BURL from './URL';
+
 
 export default function Login(){
     const {login} = useContext(UserContext);
@@ -41,7 +43,7 @@ useEffect(()=>{
         
 
         try{
-            const response = await fetch("http://localhost:8000/add-machine",{
+            const response = await fetch(BURL+"add-machine",{
                 method:"POST",
                 headers:{
                     "Content-Type":"application/json"

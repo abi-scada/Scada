@@ -51,11 +51,11 @@ function Home() {
       <section id="contact" className="features-grid contact-section">
         <div className="feature-card">
           <h3>Address</h3>
-          <p>Optimize energy output by adjusting turbine pitch in real-time based on AI wind predictions.</p>
+          <p>11/A, North Street, Dharmalingapuram, <br />Panagudi-627109, Tirunelveli </p>
         </div>
         <div className="feature-card">
           <h3>Phone & Mail</h3>
-          <p>Encryption-first architecture ensures your infrastructure stays safe from digital threats.</p>
+          <p>+91 9524943310 <br />www.abineshferrari129@gmail.com</p>
         </div>
         <div className="feature-card">
           <h3>Social Media</h3>

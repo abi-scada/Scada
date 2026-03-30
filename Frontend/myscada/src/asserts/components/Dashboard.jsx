@@ -12,22 +12,49 @@ import CrossBell from "../icons/stop.png";
 import Footer from './Footer';
 import useWakeLock from "./WakeLock";
 import { useLoading } from './LoadingContext';
-import ProfileBoy from '../icons/boy.png';
-import insta from '../icons/instagram.png';
-import whatsapp from '../icons/whatsapp.png';
-import mail from '../icons/mail.png';
+import card from '../icons/dashboard.png';
+import map from '../icons/map.png';
+
 import { useTheme } from './ThemeContext';
 import { toast } from 'react-toastify';
+import { useApp } from '../../context/AppContext';
+import MapView from './MapView';
 
 
 
 export default  function  Dashboard() {
+
     useWakeLock(true);
     const [machine, setMachine] = useState([]); 
-    const [showProfile, setShowProfile] = useState(false);
-    const [showLogout, setShowLogout] = useState(false);
-    const [globalAlarm, setGlobalAlarm] = useState(false);
-    const [pro, setPro] = useState({});//for profile data
+    const [summary, setSummary] = useState(null);
+    const [now, setNow] = useState(new Date());
+    const [tab, setTab] = useState(2);
+    const [activeTab, setActiveTab] = useState("Map View");
+    //const [showProfile, setShowProfile] = useState(false);
+    //const [showLogout, setShowLogout] = useState(false);
+    //const [globalAlarm, setGlobalAlarm] = useState(false);
+
+    const tabs = [
+          {name:'Card View', icon: card},
+          {name:'Map View', icon: map},
+        ]
+    const changeTab = (id) => {
+      setTab(id+1);
+    }
+
+    const {
+        userId,
+        setUserId,
+        userName,
+        showProfile,
+        showLogout,
+        globalAlarm,
+        setGlobalAlarm,
+        setShowProfile,
+        setShowLogout,
+        pro, 
+        setPro
+        } = useApp();
 
     const { setDataDone } = useLoading();
 
@@ -38,7 +65,7 @@ export default  function  Dashboard() {
 
     const navigate = useNavigate();
     //const playSound = alarm_active && !alarm_ack && globalAlarmEnabled;
-    console.log("GLOBAL:", globalAlarm);
+    //console.log("GLOBAL:", globalAlarm);
 
     const alarmRef = useRef(null);
 
@@ -46,6 +73,12 @@ export default  function  Dashboard() {
 useEffect(() => {
   alarmRef.current = new Audio(alarmAudio);
   alarmRef.current.loop = true;
+}, []);
+
+
+useEffect(() => {
+  const t = setInterval(() => setNow(new Date()), 1000);
+  return () => clearInterval(t);
 }, []);
 
 useEffect(() => {
@@ -93,6 +126,22 @@ console.log("global : ", globalAlarm, "")
         const interval = setInterval(fetchAll, 15000);
         return () => clearInterval(interval);
     
+    }, [usr]);
+
+    useEffect(() => {
+        if (!usr) return;
+        const fetchSummary = async () => {
+            try{ 
+                const res = await axios.get(BURL+"production/summary/"+usr);
+                setSummary(res.data);
+            }
+            catch(error){
+                console.log("error in summary fetch : ", error);
+            }
+        };
+        fetchSummary();
+        const interval = setInterval(fetchSummary, 60000);
+        return () => clearInterval(interval);
     }, [usr]);
     const getTime = (dt) => {
         if (!dt) return "--:--:--";
@@ -183,67 +232,65 @@ console.log("global : ", globalAlarm, "")
     
     return(<div className='Rroot'>
         
-        {showProfile&&
-              <div className="profile-container-overlay" onClick={()=>{setShowProfile(false)}}>
-                  <div className="glass-card profile-container" onClick={(e) => e.stopPropagation()}>
-                  <h3>Profile</h3>
-                  <img src={ProfileBoy} alt="" className="profile-boy" />
-                  <p className='profile-name'><span>{pro.id}</span>-{pro.name}</p>
-                  <p>{pro.email}</p>
-
-                  <div className="bg-options">
-                    {Object.keys(gradients).map((key) => (
-                        <div
-                        key={key}
-                        className="bg-swatch"
-                        style={{ background: gradients[key] }}
-                        onClick={() => setBg(key)}
-                        />
-                    ))}
-                    </div>
-                    <div className="admin-query">
-                        <p>For Query<br />Contact</p>
-                        <h1>Admin</h1>
-                        <img src={insta} className='insta-icon' alt="" />
-                    <img src={whatsapp} className='whatsapp-icon' alt="" />
-                        <img src={mail} className='mail-icon' alt="" />
-
-
-                    </div>
-
-
-              </div>
-
-              </div>
-            }
-        {showLogout&&
-            <div className="logout-overlay" onClick={()=>{setShowLogout(false)}}>
-                <div className="glass-card logout-contain" >
-                    <p>Are You Sure ?</p>
-                    <div className="btn-contains">
-                        <button onClick={logout} className='logout-btn' >Logout</button>
-                        <button onClick={()=>{setShowLogout(false)}} className='can-btn' >Cancel</button>
-                    </div>
-                    </div>
-                    
-            </div>
-        }
+        
         <div className="nav-container">
-            <Header
-                user={usr}
-                globalAlarm={globalAlarm}
-                setGlobalAlarm={setGlobalAlarm}
-                setShowProfile={setShowProfile}
-                setShowLogout={setShowLogout}
-                />
-
+            <Header user={usr}/>
         </div>
+        
+
+        <div className="summary-card">
+            <div className="summary-left">
+                <div className="summary-title">Current Time</div>
+                <div className="summary-time">{now.toLocaleTimeString()}</div>
+                <div className="summary-date">{now.toLocaleDateString()}</div>
+            </div>
+            <div className="summary-center">
+                <div className="summary-title">Hero of the Day</div>
+                <div className="summary-hero-name">
+                    {summary?.hero ? `${summary.hero.mc_name}` : "--"}
+                </div>
+                <div className="summary-hero-gen">
+                    {summary?.hero ? `${summary.hero.total_kw} kW` : "--"}
+                </div>
+            </div>
+            <div className="summary-right">
+                <div className="summary-title">Total Daily <span className='br'><br/></span> Production</div>
+                <div className="summary-value">{summary?.total_kw ?? 0} kW</div>
+            </div>
+        </div>
+
+            <div className="tabs_container">
+                <ul className="tab-list">
+                {tabs.map((tab,index)=>(
+                    <li
+                    key={tab.name}
+                    className={activeTab === tab.name ? 'tab active-tab' : 'tab'}
+                    onClick={()=>{
+                        setActiveTab(tab.name);
+                        changeTab(index);
+                        
+                    }}
+                    ><img src={tab.icon} className='tab-icons' alt="" />
+                    {tab.name}
+                    </li>))}
+                </ul>
+            </div>
+        <div className={tab === 1 ? "show-tab" : "ta"}>
         <div className="card-root">
-            
         {machine.length > 0 ? (
             machine.map((mc)=>(
         
             <div key={mc.mc_id} className="glass-card" onClick={()=>goDeep(mc)}>
+                <div className="loc_container">
+                    <a 
+                    href={"https://www.google.com/maps/dir/?api=1&origin=Current+Location&destination="+mc.mc_lat+","+mc.mc_long+"&travelmode=driving"} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    >
+                    <img src={map} className='loc_icon' alt="Location icon" />
+                    </a>
+                    
+                </div>
                 <div className="bell-container">
                     <img
                     alt='bell'
@@ -304,9 +351,17 @@ console.log("global : ", globalAlarm, "")
         <p>No Machines Added Yet!!!</p>
     )}
      </div>
+     </div>
+     <div className={tab === 2 ? "show-tab" : "ta"}>
+        <div className="map_roo">
+            <MapView machine={machine}/>
+        </div>
+     </div>
+
      <div className='footer-container'>
         <Footer />
      </div>
+     
     </div>
     );
 }

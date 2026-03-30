@@ -9,7 +9,7 @@
   --glass-border: rgba(255, 255, 255, 0.1);
 }
 
-body {
+html, body {
   margin: 0;
   font-family: 'Popins', sans-serif;
   background-color: var(--bg-dark);
@@ -17,6 +17,11 @@ body {
   overflow-x: hidden;
   scrollbar-width: none;
   -ms-overflow-style: none;
+}
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .landing-page{

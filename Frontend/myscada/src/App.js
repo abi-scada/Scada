@@ -19,6 +19,7 @@ import Cookies from 'js-cookie';
 import VantaNet from "./asserts/components/VantaNet";
 import EditTurbine from './asserts/components/EditTurbine';
 import Test from './asserts/components/Test';
+import ModalManager from './asserts/components/ModalManager';
 
 
 
@@ -57,6 +58,7 @@ function App() {
         limit={1}
         transition={Bounce}
       />
+      <ModalManager/>
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={usr?<Navigate replace to="/dashboard" />:<Home/>} />
           <Route path='/login' element={usr?<Navigate replace to="/dashboard" />:<Login/>} />

@@ -83,11 +83,11 @@ export default function BasicChart({ id }) {
     ],
     dataZoom: [
   { type: "inside",
-    start:95,
+    start:90,
     end:100
    },   // mouse / touch zoom
   { type: "slider",
-    start:95,
+    start:80,
     end:100 }    // bottom scrollbar
 ],
 animation: false,
@@ -156,11 +156,11 @@ export function PowerTimeChart({ data }) {
   },
     dataZoom: [
   { type: "inside",
-    start:95,
+    start:90,
     end:100
    },   // mouse / touch zoom
   { type: "slider",
-    start:95,
+    start:90,
     end:100
    }    // bottom scrollbar
 ],

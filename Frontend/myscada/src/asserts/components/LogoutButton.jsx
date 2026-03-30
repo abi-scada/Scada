@@ -1,7 +1,9 @@
+import { useApp } from '../../context/AppContext'
 import sth from '../icons/power-off.png'
 import '../styles/LogoutButton.css'
 
-const LogoutButton = ({setShowLogout}) => {
+const LogoutButton = () => {
+  const {setShowLogout} = useApp();
   
   return (
     <div title = 'Logout' onClick={()=>setShowLogout(prev=>!prev)} className='logoutContainer'>

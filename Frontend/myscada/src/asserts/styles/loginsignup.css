@@ -24,6 +24,7 @@
   width: 80px;
   position: absolute;
   padding-bottom: 50px;
+  z-index: 99;
 }
 
 
@@ -101,6 +102,9 @@
   box-shadow: 0 0 20px rgba(0, 229, 255, 0.6);
   transform: translateY(-2px);
 }
+.back-button{
+  z-index: 11;
+}
 
 @media (min-width: 768px) {
   .login-container {
@@ -171,6 +175,7 @@
 }
 
 .admin-btn{
- 
+ z-index: 11;
 }
+
 }

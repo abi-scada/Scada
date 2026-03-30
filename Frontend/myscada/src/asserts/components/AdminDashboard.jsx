@@ -8,7 +8,7 @@ const AdminDashboard = () => {
 const navigate = useNavigate();
     return (
     <div className='admin-panel-container'>
-        <button className='back-button' onClick={()=>navigate(-1)}> <img className='undo-icon' src={HomeIcon} alt="" /> </button>
+        <button className='back-button' onClick={()=>navigate('/')}> <img className='undo-icon' src={HomeIcon} alt="" /> </button>
         
       
         <h3 className='admin-panel-title'>Admin Panel</h3>

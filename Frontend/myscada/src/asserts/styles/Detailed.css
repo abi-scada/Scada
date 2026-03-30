@@ -104,10 +104,11 @@
 
 .bb{
   position: absolute;
-  top: 5px;
+  top: 10px;
   left: 10px;
   cursor: pointer;
   color: white;
+  z-index: 99999;
 }
 .bb img{
   height: 25px;
@@ -254,13 +255,6 @@ border-radius: 5px;
 
 /*Chart Styling*/
 
-.wp-chart{
-  
-}
-.p-chart{
-  
-}
-
 .chart-container{
   height: 69vh;
   width: 99vw;
@@ -293,7 +287,9 @@ border-radius: 5px;
     inset 0 -1px 0 rgba(255, 255, 255, 0.1),
     inset 0 0 6px 3px rgba(255, 255, 255, 0.3);
   
-  
+  border-width: 1px;
+  border-color: var(--accent-cyan);
+  background: rgba(0, 229, 255, 0.03);
   transition: 0.3s;
   overflow-x: hidden;
 }
@@ -326,12 +322,6 @@ border-radius: 5px;
     transparent,
     rgba(255, 255, 255, 0.3)
   );
-}
-
-.detailed-table:hover {
-    border-width: 1px;
-  border-color: var(--accent-cyan);
-  background: rgba(0, 229, 255, 0.03);
 }
 
 .detailed-table-container{
@@ -373,6 +363,7 @@ border-radius: 5px;
   align-items: center;
   flex-direction: column;
   justify-content: space-between;
+  z-index: 0;
 
 }
 .report-container *{
@@ -381,15 +372,17 @@ border-radius: 5px;
 }
 .download-btn{
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
+  color: green;
   height: 50px;
   width: 200px;
-  color: var(--text-main);
-  background-color: green;
   font-weight: bolder;
   border-radius: 15px;
+  border-color: #00e5ff;
   border: none;
+  z-index: 1;
 }
 .download-btn h4{
   font-size: 19px;
@@ -537,7 +530,7 @@ border-radius: 5px;
 
 .bb{
   position: absolute;
-  top: 5px;
+  top: 10px;
   left: 10px;
   cursor: pointer;
   color: white;
@@ -805,8 +798,6 @@ border-radius: 5px;
   justify-content: center;
   height: 50px;
   width: 200px;
-  color: var(--text-main);
-  background-color: green;
   font-weight: bolder;
   border-radius: 15px;
   border: none;
