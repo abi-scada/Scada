@@ -712,6 +712,7 @@ def my_machines(uid:int, db: Session = Depends(get_db)):
 
 # Find Machines by name
 @app.get('/my-machines/{user_name}')
+def my_machines(user_name:str, db: Session = Depends(get_db)):
     return db.query(dbModel.Machines).join(dbModel.Users).filter(dbModel.Users.name == user_name).all()
 
 # User Related APIs
