@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Optional
 
 
+
 class EmailRequest(BaseModel):
     email: EmailStr
     subject: str
@@ -29,7 +30,7 @@ class Machines(BaseModel):
     latitude: float
     longitude: float
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class TurbineData(BaseModel):
 #    tid : int
