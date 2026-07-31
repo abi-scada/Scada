@@ -1,0 +1,385 @@
+.leaflet-container{
+  height:100%;
+  width:100%;
+}
+
+.map_root{
+  z-index: 99;
+}
+.rotor-marker {
+  background: transparent;
+  border: none;
+}
+
+.machine-label {
+  position: absolute;
+  top: 90px;              /* below rotor */
+  left: 75%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  font-weight: 600;
+  color: #222;
+  white-space: nowrap;
+  pointer-events: none;   /* allow hover on marker */
+  text-shadow: 0 0 3px white;
+}
+
+
+.user-dot {
+  width: 12px;
+  height: 12px;
+  background-color: #1e90ff;
+  border: 2px solid white;
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(30, 144, 255, 0.9);
+}
+
+
+
+.map_root{
+    margin-top: 111px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+
+.map_container{
+    position: relative;
+    height: 70vh;
+    width: 99%;
+    border-radius: 5px;
+}
+
+.map-controls {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  gap: 8px;
+}
+
+.map-controls button {
+  padding: 6px 10px;
+  border: none;
+  background-color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.map-controls button:hover {
+  background-color: #eee;
+}
+
+
+.map_ro{
+    height: 150px;
+    width: 150px;
+    
+    filter: invert(62%) sepia(63%) saturate(4771%) hue-rotate(83deg) brightness(122%) contrast(123%);
+    
+    animation: animate 2s infinite linear;
+    transform-origin: 50% 41%;
+    background-color: transparent;
+    
+}
+
+.err{
+    color: red;
+}
+.gd{
+    color: rgb(88, 255, 244);
+}
+.red {
+    filter: invert(25%) sepia(97%) saturate(7467%) hue-rotate(2deg) brightness(100%) contrast(120%);
+    animation: none;
+}
+.blue{
+    filter: invert(8%) sepia(100%) saturate(7350%) hue-rotate(248deg) brightness(97%) contrast(144%);
+    animation: none;
+}
+.orange{
+    filter: invert(75%) sepia(40%) saturate(4924%) hue-rotate(358deg) brightness(103%) contrast(105%);
+    animation: animate 5s infinite linear;
+}
+.overWind{
+   filter: brightness(0) saturate(100%) invert(73%) sepia(84%) saturate(856%) hue-rotate(107deg) brightness(108%) contrast(102%);
+    animation: animate 1s infinite linear;
+}
+
+.hide-labels .machine-label {
+  display: none;
+}
+
+.recenter-btn {
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  z-index: 1000;
+  padding: 8px 14px;
+  background: #1e293b;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.recenter-btn:hover {
+  background: #334155;
+}
+
+.map-compass {
+  position: absolute;
+  top: 20px;
+  left: 60px;
+  width: 80px;
+  height: 80px;
+  border: 2px solid #1e293b;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  z-index: 1000;
+  font-weight: bold;
+  font-size: 14px;
+  color: #1e293b;
+}
+
+.map-compass div {
+  position: absolute;
+}
+
+.north {
+  top: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: red;
+}
+
+.south {
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.east {
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.west {
+  left: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+
+@keyframes animate {
+    0%{
+        transform: rotate(0deg);
+    }
+    50%{
+        transform: rotate(180deg);
+
+    }
+    100%{
+        transform: rotate(360deg);
+    }
+}
+
+@media (min-width:768px) {
+  .leaflet-container{
+  height:100%;
+  width:100%;
+}
+
+.map_root{
+  z-index: 99;
+}
+.rotor-marker {
+  background: transparent;
+  border: none;
+}
+
+.machine-label {
+  position: absolute;
+  top: 90px;              /* below rotor */
+  left: 75%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  font-weight: 600;
+  color: #222;
+  white-space: nowrap;
+  pointer-events: none;   /* allow hover on marker */
+  text-shadow: 0 0 3px white;
+}
+
+
+.user-dot {
+  width: 12px;
+  height: 12px;
+  background-color: #1e90ff;
+  border: 2px solid white;
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(30, 144, 255, 0.9);
+}
+
+
+
+.map_root{
+    margin-top: 115px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+
+.map_container{
+    position: relative;
+    height: 63vh;
+    width: 99%;
+    border-radius: 5px;
+}
+
+.map-controls {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  gap: 8px;
+}
+
+.map-controls button {
+  padding: 6px 10px;
+  border: none;
+  background-color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.map-controls button:hover {
+  background-color: #eee;
+}
+
+
+.map_ro{
+    height: 150px;
+    width: 150px;
+    
+    filter: invert(62%) sepia(63%) saturate(4771%) hue-rotate(83deg) brightness(122%) contrast(123%);
+    
+    animation: animate 2s infinite linear;
+    transform-origin: 50% 41%;
+    background-color: transparent;
+    
+}
+
+.err{
+    color: red;
+}
+.gd{
+    color: rgb(88, 255, 244);
+}
+.red {
+    filter: invert(25%) sepia(97%) saturate(7467%) hue-rotate(2deg) brightness(100%) contrast(120%);
+    animation: none;
+}
+.blue{
+    filter: invert(8%) sepia(100%) saturate(7350%) hue-rotate(248deg) brightness(97%) contrast(144%);
+    animation: none;
+}
+.orange{
+    filter: invert(75%) sepia(40%) saturate(4924%) hue-rotate(358deg) brightness(103%) contrast(105%);
+    animation: animate 5s infinite linear;
+}
+.overWind{
+   filter: brightness(0) saturate(100%) invert(73%) sepia(84%) saturate(856%) hue-rotate(107deg) brightness(108%) contrast(102%);
+    animation: animate 1s infinite linear;
+}
+
+.hide-labels .machine-label {
+  display: none;
+}
+
+.recenter-btn {
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  z-index: 1000;
+  padding: 8px 14px;
+  background: #1e293b;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.recenter-btn:hover {
+  background: #334155;
+}
+
+.map-compass {
+  position: absolute;
+  top: 20px;
+  left: 60px;
+  width: 80px;
+  height: 80px;
+  border: 2px solid #1e293b;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  z-index: 1000;
+  font-weight: bold;
+  font-size: 14px;
+  color: #1e293b;
+}
+
+.map-compass div {
+  position: absolute;
+}
+
+.north {
+  top: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: red;
+}
+
+.south {
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.east {
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.west {
+  left: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+
+@keyframes animate {
+    0%{
+        transform: rotate(0deg);
+    }
+    50%{
+        transform: rotate(180deg);
+
+    }
+    100%{
+        transform: rotate(360deg);
+    }
+}
+}
