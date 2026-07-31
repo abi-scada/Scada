@@ -463,33 +463,33 @@ def download_csv(
         }
     )
 
-async def turbine_simulator(machine_id: int,db: Session = Depends(get_db)):
-    while True:
-        data = generate_turbine_data(machine_id)
-        db = SL()
-        td_row = dbModel.TurbineData(**data.model_dump())
-        db.add(td_row)
-        db.commit()
-        update_daily_production(td_row, db)
-        handle_alarm(
-        mc_id=data.mcId,
-        status=data.status,
-        db=db
-        )
-        db.close()
+# async def turbine_simulator(machine_id: int,db: Session = Depends(get_db)):
+#     while True:
+#         data = generate_turbine_data(machine_id)
+#         db = SL()
+#         td_row = dbModel.TurbineData(**data.model_dump())
+#         db.add(td_row)
+#         db.commit()
+#         update_daily_production(td_row, db)
+#         handle_alarm(
+#         mc_id=data.mcId,
+#         status=data.status,
+#         db=db
+#         )
+#         db.close()
         
 
-    #return {"ok": True}
-        await asyncio.sleep(30)
+#     #return {"ok": True}
+#         await asyncio.sleep(30)
 
 
-@app.on_event("startup")
-async def start_simulator():
-    machine_ids = [302,303, 304, 305]
+# @app.on_event("startup")
+# async def start_simulator():
+#     machine_ids = [302,303, 304, 305]
 
-    for mid in machine_ids:
-        asyncio.create_task(turbine_simulator(mid))
-    print("simulator running!!!")
+#     for mid in machine_ids:
+#         asyncio.create_task(turbine_simulator(mid))
+#     print("simulator running!!!")
     
 
 
