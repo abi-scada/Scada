@@ -28,7 +28,7 @@ import ModalManager from './asserts/components/ModalManager';
 
 
 function App() {
-  const isLoggedIn = JSON.parse(localStorage.getItem('isLoggedIn'));
+  //const isLoggedIn = JSON.parse(localStorage.getItem('isLoggedIn'));
   const location = useLocation();
   const { loading } = useLoading();
 
