@@ -8,7 +8,7 @@ function AdminLogin() {
     const navigate = useNavigate();
 
     return (
-        <div>
+        <div className='admin-login-container'>
             <h1>Admin Login</h1>
 
             <GoogleLogin

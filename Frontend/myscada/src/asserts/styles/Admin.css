@@ -52,5 +52,16 @@
 .user-title span{
     color: aqua;
     text-transform: capitalize;
-    
+        width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    border: 1px solid lightblue;
+    z-index: 20;
 }
+.admin-panel-container *{
+    z-index: 20;
+}
+}
+
