@@ -18,7 +18,7 @@ def verify_admin(credential:str):
             clock_skew_in_seconds=30
         )
         print("token verified")
-        print(user)
+        
         
     except Exception as e:
         import traceback

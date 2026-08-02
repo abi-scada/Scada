@@ -21,7 +21,7 @@ function AdminLogin() {
                             }
                         );
 
-                        console.log(result.data);
+                        
 
                         localStorage.setItem(
                             "adminToken",
