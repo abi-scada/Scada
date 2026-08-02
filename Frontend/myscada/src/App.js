@@ -20,6 +20,7 @@ import VantaNet from "./asserts/components/VantaNet";
 import EditTurbine from './asserts/components/EditTurbine';
 import Test from './asserts/components/Test';
 import ModalManager from './asserts/components/ModalManager';
+import AdminLogin from './asserts/components/AdminLogin';
 
 
 
@@ -62,6 +63,7 @@ function App() {
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={usr?<Navigate replace to="/dashboard" />:<Home/>} />
           <Route path='/login' element={usr?<Navigate replace to="/dashboard" />:<Login/>} />
+          <Route path='/adminlogin' element={usr?<Navigate replace to="/dashboard" />:<AdminLogin/>} />
           <Route path='/signup' element={<Signup/>} />
           <Route path='/machines' element={<Machines/>} />
           <Route path='/dashboard' element={usr?<Dashboard/>:<Navigate replace to="/login" />} />

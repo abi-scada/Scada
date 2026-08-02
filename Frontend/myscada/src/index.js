@@ -12,13 +12,17 @@ import "leaflet/dist/leaflet.css";
 
 import "./utils/leafletIconFix";
 import { AppProvider } from './context/AppContext';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
+
 root.render(
+  
   <React.StrictMode>
+  <GoogleOAuthProvider clientId={"1012175163051-6es6m84g4e6ghi433to01kh644bq9qb7.apps.googleusercontent.com"}>
     <UserProvider>
       <ThemeProvider>
         <BrowserRouter>
@@ -30,6 +34,7 @@ root.render(
         </BrowserRouter>
       </ThemeProvider>
     </UserProvider>
+    </GoogleOAuthProvider>
   </React.StrictMode>
 );
 

@@ -3,7 +3,9 @@ from datetime import datetime
 from typing import Optional
 
 
-
+class GoogleToken(BaseModel):
+    credential:str
+    
 class EmailRequest(BaseModel):
     email: EmailStr
     subject: str

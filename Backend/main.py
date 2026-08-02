@@ -1,6 +1,6 @@
 from fastapi import Depends,FastAPI, HTTPException, Query, BackgroundTasks
 from fastapi.responses import StreamingResponse, FileResponse
-from models import Users, Machines, TurbineData, LoginRequest,EmailRequest
+from models import Users, Machines, TurbineData, LoginRequest,EmailRequest, GoogleToken
 import dbModel
 import asyncio
 import os
@@ -18,6 +18,7 @@ from fastapi_mail import FastMail, MessageSchema, MessageType
 from emailConfig import conf
 from email_service import send_welcome_email
 from dbModel import Alarm
+from security.google_auth import verify_admin
 
 
 #wdpk vwcq cjkk bfwd
@@ -295,6 +296,24 @@ def get_turbine_by_date_range(
     #print("length of Response : ",len(data))
     return data
 
+
+@app.post("/admin/google-login")
+def google_login(data:GoogleToken):
+    user = verify_admin(data.credential)
+    
+    token = create_access_token({
+        "email":user["email"],
+        "role":"admin"
+    })
+    print(user["email"])
+    
+    return {
+        "token":token,
+        "name":user["name"],
+        "email":user["email"],
+        "picture":user["picture"]
+    }
+    
 @app.post("/send-email")
 async def send_email(data: EmailRequest):
     message = MessageSchema(

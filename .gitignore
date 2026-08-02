@@ -30,3 +30,5 @@ Thumbs.db
 .env.local
 Backend/.env
 Backend/database.py
+Frontend/myscada/.env
+

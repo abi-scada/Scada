@@ -6,7 +6,7 @@ import { Title } from "chart.js";
 import "../styles/Line.css"
 import BURL from "./URL";
 
-const WEEK_URL = BURL+"turbine/week/"
+const WEEK_URL = BURL+"turbine/week"
 
 
 export default function BasicChart({ id }) {
@@ -21,7 +21,7 @@ export default function BasicChart({ id }) {
         params:{
           machine_id: id,
           offset: 0,
-          limit: 200,
+          limit: 100,
         }
       });
         setTdata(res.data);

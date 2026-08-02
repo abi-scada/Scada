@@ -98,7 +98,7 @@ export default function Login(){
         
     }
     function launchAdmin(){
-      navigate('/admin');
+      navigate('/adminlogin');
     }
 
     return(
