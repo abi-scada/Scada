@@ -21,7 +21,7 @@ export default function BasicChart({ id }) {
         params:{
           machine_id: id,
           offset: 0,
-          limit: 100,
+          limit: 200,
         }
       });
         setTdata(res.data);

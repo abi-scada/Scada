@@ -14,8 +14,12 @@ from datetime import datetime,timedelta
 from security.password import verify_password,hash_password
 from security.auth import create_access_token, get_user_id
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi_mail import FastMail, MessageSchema, MessageType
-from emailConfig import conf
+#from fastapi_mail import FastMail, MessageSchema, MessageType
+#from emailConfig import conf
+
+import resend
+import base64
+
 from email_service import send_welcome_email
 from dbModel import Alarm
 from security.google_auth import verify_admin
@@ -30,9 +34,12 @@ from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 import tempfile
 
+
+
 app = FastAPI()
 
 PRODUCTION_RETENTION_DAYS = int(os.getenv("PRODUCTION_RETENTION_DAYS", "100"))
+TURBINE_DATA_RETENTION_DAYS = int(os.getenv("TURBINE_DATA_RETENTION_DAYS", "30"))
 
 
 origins = [
@@ -60,6 +67,15 @@ def get_db():
 
 
 
+def cleanup_old_turbine_data(db: Session) -> None:
+    if TURBINE_DATA_RETENTION_DAYS > 0:
+        cutoff = datetime.utcnow() - timedelta(days=TURBINE_DATA_RETENTION_DAYS)
+        deleted = db.query(dbModel.TurbineData).filter(
+            dbModel.TurbineData.created_at < cutoff
+        ).delete(synchronize_session=False)
+        db.commit()
+        print(f"turbine_data cleanup: removed {deleted} rows older than {cutoff}")
+        
 def update_daily_production(td: dbModel.TurbineData, db: Session) -> None:
     created_at = td.created_at or datetime.utcnow()
     day = created_at.date()
@@ -153,7 +169,7 @@ async def send_daily_production_report(user, db: Session) -> None:
 
     if not rows:
         return
-
+ 
     file_path = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf").name
     doc = SimpleDocTemplate(
         file_path,
@@ -191,20 +207,23 @@ async def send_daily_production_report(user, db: Session) -> None:
     elements.append(table)
     doc.build(elements)
 
-    message = MessageSchema(
-        subject="Daily Production Report",
-        recipients=[user.email],
-        body=f"Daily production report for {today} is attached.",
-        subtype=MessageType.plain,
-        attachments=[{
-            "file": file_path,
-            "filename": f"daily_production_{today}.pdf",
-            "content_type": "application/pdf"
-        }]
-    )
+    with open(file_path, "rb") as f:
+        pdf_bytes = f.read()
 
-    fm = FastMail(conf)
-    await fm.send_message(message)
+    try:
+        resend.Emails.send({
+            "from": "onboarding@resend.dev",  # must be a verified sender/domain in Resend
+            "to": "abi.scada@gmail.com",#[user.email]
+            "subject": "Daily Production Report",
+            "text": f"Daily production report for {today} is attached.",
+            "attachments": [{
+                "filename": f"daily_production_{today}.pdf",
+                "content": list(pdf_bytes),  # resend SDK expects bytes as a list of ints, or base64 string depending on version — see note below
+            }]
+        })
+    except Exception as e:
+        print("daily report error:", e)
+        raise
 
     try:
         os.remove(file_path)
@@ -224,6 +243,7 @@ async def daily_report_scheduler() -> None:
 
         db = SL()
         try:
+            cleanup_old_turbine_data(db)
             users = db.query(dbModel.Users).all()
             for user in users:
                 try:
@@ -316,15 +336,16 @@ def google_login(data:GoogleToken):
     
 @app.post("/send-email")
 async def send_email(data: EmailRequest):
-    message = MessageSchema(
-        subject=data.subject,
-        recipients=[data.email],
-        body=data.message,
-        subtype=MessageType.plain
-    )
-
-    fm = FastMail(conf)
-    await fm.send_message(message)
+    try:
+        resend.Emails.send({
+            "from": "onboarding@resend.dev",  # same verified sender as the others
+            "to": "abi.scada@gmail.com",#[data.email]
+            "subject": data.subject,
+            "text": data.message,
+        })
+    except Exception as e:
+        print("send-email error:", e)
+        raise HTTPException(status_code=500, detail=str(e))
 
     return {"status": "Email sent successfully"}
 
@@ -368,14 +389,27 @@ async def get_week_data(
     # .filter(dbModel.TurbineData.created_at >= start)
     # .filter(dbModel.TurbineData.created_at <= end)
     # #.order_by(dbModel.TurbineData.created_at)
-    data = db.query(dbModel.TurbineData).filter(
+    """data = db.query(dbModel.TurbineData).filter(
         dbModel.TurbineData.mcId == machine_id,
         #dbModel.TurbineData.created_at.between(start_date, end_date),
         dbModel.TurbineData.created_at >= end,
         dbModel.TurbineData.created_at <= start
-    ).order_by(dbModel.TurbineData.created_at.desc()).offset(offset).limit(limit).all()
-    #print("length of Response : ",len(data))
+    ).order_by(dbModel.TurbineData.created_at.desc()).offset(offset).limit(limit).all()"""
     
+    now = datetime.now()
+    three_days_ago = now - timedelta(days=7)
+    data = (
+    db.query(dbModel.TurbineData)
+    .filter(
+        dbModel.TurbineData.mcId == machine_id,
+        dbModel.TurbineData.created_at.between(three_days_ago, now),
+    )
+    .order_by(dbModel.TurbineData.created_at.desc())
+    .offset(offset)
+    .limit(limit)
+    .all()
+)
+    print("length of Response : ",len(data))
     return data
 
 @app.get('/turbine/pdf')
@@ -482,33 +516,33 @@ def download_csv(
         }
     )
 
-# async def turbine_simulator(machine_id: int,db: Session = Depends(get_db)):
-#     while True:
-#         data = generate_turbine_data(machine_id)
-#         db = SL()
-#         td_row = dbModel.TurbineData(**data.model_dump())
-#         db.add(td_row)
-#         db.commit()
-#         update_daily_production(td_row, db)
-#         handle_alarm(
-#         mc_id=data.mcId,
-#         status=data.status,
-#         db=db
-#         )
-#         db.close()
+async def turbine_simulator(machine_id: int,db: Session = Depends(get_db)):
+    while True:
+        data = generate_turbine_data(machine_id)
+        db = SL()
+        td_row = dbModel.TurbineData(**data.model_dump())
+        db.add(td_row)
+        db.commit()
+        update_daily_production(td_row, db)
+        handle_alarm(
+        mc_id=data.mcId,
+        status=data.status,
+        db=db
+        )
+        db.close()
         
 
-#     #return {"ok": True}
-#         await asyncio.sleep(30)
+    #return {"ok": True}
+        await asyncio.sleep(30)
 
 
-# @app.on_event("startup")
-# async def start_simulator():
-#     machine_ids = [302,303, 304, 305]
+@app.on_event("startup")
+async def start_simulator():
+    machine_ids = [1]
 
-#     for mid in machine_ids:
-#         asyncio.create_task(turbine_simulator(mid))
-#     print("simulator running!!!")
+    for mid in machine_ids:
+        asyncio.create_task(turbine_simulator(mid))
+    print("simulator running!!!")
     
 
 
